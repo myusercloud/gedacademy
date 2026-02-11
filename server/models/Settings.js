@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const homepageSectionSchema = new mongoose.Schema(
   {
@@ -13,7 +13,7 @@ const newsEventSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     date: { type: Date, required: true },
-    type: { type: String, enum: ['news', 'event'], default: 'news' },
+    type: { type: String, enum: ["news", "event"], default: "news" },
     content: { type: String },
   },
   { _id: false }
@@ -49,6 +49,7 @@ const settingsSchema = new mongoose.Schema(
     currentTerm: { type: String },
     currentYear: { type: Number },
     gradingScale: { type: Object },
+
     cms: {
       homepageSections: [homepageSectionSchema],
       aboutContent: { type: String },
@@ -60,5 +61,4 @@ const settingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Settings', settingsSchema);
-
+export default mongoose.model("Settings", settingsSchema);

@@ -1,10 +1,10 @@
-const nodemailer = require('nodemailer');
+import nodemailer from "nodemailer";
 
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT) || 587,
-    secure: process.env.EMAIL_SECURE === 'true',
+    secure: process.env.EMAIL_SECURE === "true",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -12,7 +12,7 @@ const createTransporter = () => {
   });
 };
 
-const sendEmail = async ({ to, subject, html, text }) => {
+export const sendEmail = async ({ to, subject, html, text }) => {
   const transporter = createTransporter();
 
   const mailOptions = {
@@ -25,6 +25,3 @@ const sendEmail = async ({ to, subject, html, text }) => {
 
   await transporter.sendMail(mailOptions);
 };
-
-module.exports = { sendEmail };
-

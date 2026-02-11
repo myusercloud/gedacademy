@@ -1,3 +1,16 @@
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Fix __dirname / __filename for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from parent folder
+dotenv.config({
+  path: path.join(__dirname, "..", ".env"),
+});
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -5,8 +18,6 @@ import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import path from "path";
-import { fileURLToPath } from "url";
 
 import connectDB from "./config/db.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
@@ -30,16 +41,12 @@ import reportRoutes from "./routes/reportRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 
-// Fix __dirname for ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 
 // Connect DB
 connectDB();
 
-// Security middlewares
+// Security Middlewares
 app.use(helmet());
 app.use(
   cors({
@@ -49,25 +56,25 @@ app.use(
 );
 app.use(mongoSanitize());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: "Too many requests from this IP, please try again later.",
-});
-app.use("/api", limiter);
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  })
+);
 
-// Body parsers
+// Parsers
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Logging
+// Dev logging
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
 
-// Serve static uploads
+// Static files
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Routes
@@ -95,10 +102,8 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// 404 handler
+// Errors
 app.use(notFound);
-
-// Error handler
 app.use(errorHandler);
 
 export default app;

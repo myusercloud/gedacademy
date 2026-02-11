@@ -1,5 +1,15 @@
 import dotenv from "dotenv";
-dotenv.config();
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Fix __dirname / __filename for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from parent folder
+dotenv.config({
+  path: path.join(__dirname, "..", ".env"),
+});
 
 import http from "http";
 import app from "./app.js";

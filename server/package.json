@@ -9,6 +9,7 @@
     "build": "echo \"Nothing to build for Node server\"",
     "seed:admin": "node utils/seedAdmin.js"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "MIT",
@@ -35,4 +36,3 @@
     "nodemon": "^3.1.7"
   }
 }
-

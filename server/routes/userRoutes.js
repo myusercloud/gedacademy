@@ -1,21 +1,22 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   getUsers,
   getUserById,
   updateUser,
   deleteUser,
-} = require('../controllers/userController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/userController.js";
 
-router.use(auth, roleCheck('admin'));
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-router.get('/', asyncHandler(getUsers));
-router.get('/:id', asyncHandler(getUserById));
-router.put('/:id', asyncHandler(updateUser));
-router.delete('/:id', asyncHandler(deleteUser));
+// Only admin can manage users
+router.use(auth, roleCheck("admin"));
 
-module.exports = router;
+router.get("/", asyncHandler(getUsers));
+router.get("/:id", asyncHandler(getUserById));
+router.put("/:id", asyncHandler(updateUser));
+router.delete("/:id", asyncHandler(deleteUser));
 
+export default router;

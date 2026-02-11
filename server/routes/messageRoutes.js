@@ -1,20 +1,20 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   sendMessage,
   getConversation,
   getInbox,
-} = require('../controllers/messageController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/messageController.js";
 
-// Authenticated teacher or parent messaging
-router.use(auth, roleCheck('teacher', 'parent', 'admin'));
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-router.post('/', asyncHandler(sendMessage));
-router.get('/inbox', asyncHandler(getInbox));
-router.get('/conversation/:otherUserId', asyncHandler(getConversation));
+// Authenticated teacher, parent, or admin messaging
+router.use(auth, roleCheck("teacher", "parent", "admin"));
 
-module.exports = router;
+router.post("/", asyncHandler(sendMessage));
+router.get("/inbox", asyncHandler(getInbox));
+router.get("/conversation/:otherUserId", asyncHandler(getConversation));
 
+export default router;

@@ -1,20 +1,42 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   createTimetable,
   getTimetablesByClass,
   updateTimetable,
   deleteTimetable,
-} = require('../controllers/timetableController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/timetableController.js";
+
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 // Admin and teachers manage timetables
-router.post('/', auth, roleCheck('admin', 'teacher'), asyncHandler(createTimetable));
-router.get('/class/:classId', auth, asyncHandler(getTimetablesByClass));
-router.put('/:id', auth, roleCheck('admin', 'teacher'), asyncHandler(updateTimetable));
-router.delete('/:id', auth, roleCheck('admin'), asyncHandler(deleteTimetable));
+router.post(
+  "/",
+  auth,
+  roleCheck("admin", "teacher"),
+  asyncHandler(createTimetable)
+);
 
-module.exports = router;
+router.get(
+  "/class/:classId",
+  auth,
+  asyncHandler(getTimetablesByClass)
+);
 
+router.put(
+  "/:id",
+  auth,
+  roleCheck("admin", "teacher"),
+  asyncHandler(updateTimetable)
+);
+
+router.delete(
+  "/:id",
+  auth,
+  roleCheck("admin"),
+  asyncHandler(deleteTimetable)
+);
+
+export default router;

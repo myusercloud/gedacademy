@@ -1,16 +1,15 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const { getOverview } = require('../controllers/dashboardController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+import { getOverview } from "../controllers/dashboardController.js";
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 router.get(
-  '/',
+  "/",
   auth,
-  roleCheck('admin'),
+  roleCheck("admin"),
   asyncHandler(getOverview)
 );
 
-module.exports = router;
-
+export default router;

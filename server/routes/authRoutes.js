@@ -1,7 +1,7 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   register,
   login,
   refresh,
@@ -9,17 +9,17 @@ const {
   forgotPassword,
   resetPassword,
   getMe,
-} = require('../controllers/authController');
-const { auth } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/authController.js";
 
-router.post('/register', asyncHandler(register));
-router.post('/login', asyncHandler(login));
-router.post('/refresh', asyncHandler(refresh));
-router.post('/logout', auth, asyncHandler(logout));
-router.post('/forgot-password', asyncHandler(forgotPassword));
-router.post('/reset-password', asyncHandler(resetPassword));
-router.get('/me', auth, asyncHandler(getMe));
+import { auth } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-module.exports = router;
+router.post("/register", asyncHandler(register));
+router.post("/login", asyncHandler(login));
+router.post("/refresh", asyncHandler(refresh));
+router.post("/logout", auth, asyncHandler(logout));
+router.post("/forgot-password", asyncHandler(forgotPassword));
+router.post("/reset-password", asyncHandler(resetPassword));
+router.get("/me", auth, asyncHandler(getMe));
 
+export default router;

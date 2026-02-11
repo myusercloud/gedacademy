@@ -1,36 +1,36 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   markAttendance,
   getStudentAttendance,
   getAttendanceSummary,
-} = require('../controllers/attendanceController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/attendanceController.js";
+
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 // Teacher marks attendance
 router.post(
-  '/',
+  "/",
   auth,
-  roleCheck('teacher', 'admin'),
+  roleCheck("teacher", "admin"),
   asyncHandler(markAttendance)
 );
 
-// Attendance for a student (teacher, admin, student themselves, or parent)
+// Attendance for a student (teacher, admin, student, or parent)
 router.get(
-  '/student/:studentId',
+  "/student/:studentId",
   auth,
   asyncHandler(getStudentAttendance)
 );
 
-// Attendance summary for class (teacher or admin)
+// Attendance summary for a class (teacher or admin)
 router.get(
-  '/class/:classId/summary',
+  "/class/:classId/summary",
   auth,
-  roleCheck('teacher', 'admin'),
+  roleCheck("teacher", "admin"),
   asyncHandler(getAttendanceSummary)
 );
 
-module.exports = router;
-
+export default router;

@@ -1,23 +1,23 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   getSettings,
   upsertSettings,
-} = require('../controllers/settingsController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/settingsController.js";
+
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 // Public settings (e.g., school profile)
-router.get('/public', asyncHandler(getSettings));
+router.get("/public", asyncHandler(getSettings));
 
 // Admin updates settings
 router.put(
-  '/',
+  "/",
   auth,
-  roleCheck('admin'),
+  roleCheck("admin"),
   asyncHandler(upsertSettings)
 );
 
-module.exports = router;
-
+export default router;

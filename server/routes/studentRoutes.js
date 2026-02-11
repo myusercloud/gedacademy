@@ -1,24 +1,24 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   createStudent,
   getStudents,
   getStudentById,
   updateStudent,
   deleteStudent,
-} = require('../controllers/studentController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/studentController.js";
+
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 // Admin manages students
-router.use(auth, roleCheck('admin'));
+router.use(auth, roleCheck("admin"));
 
-router.post('/', asyncHandler(createStudent));
-router.get('/', asyncHandler(getStudents));
-router.get('/:id', asyncHandler(getStudentById));
-router.put('/:id', asyncHandler(updateStudent));
-router.delete('/:id', asyncHandler(deleteStudent));
+router.post("/", asyncHandler(createStudent));
+router.get("/", asyncHandler(getStudents));
+router.get("/:id", asyncHandler(getStudentById));
+router.put("/:id", asyncHandler(updateStudent));
+router.delete("/:id", asyncHandler(deleteStudent));
 
-module.exports = router;
-
+export default router;

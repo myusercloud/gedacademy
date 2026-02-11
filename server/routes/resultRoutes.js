@@ -1,31 +1,36 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   upsertResult,
   getResultsByStudent,
   getResultsByExam,
-} = require('../controllers/resultController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/resultController.js";
+
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 // Teachers enter marks
-router.post('/', auth, roleCheck('teacher', 'admin'), asyncHandler(upsertResult));
+router.post(
+  "/",
+  auth,
+  roleCheck("teacher", "admin"),
+  asyncHandler(upsertResult)
+);
 
 // View results by student
 router.get(
-  '/student/:studentId',
+  "/student/:studentId",
   auth,
   asyncHandler(getResultsByStudent)
 );
 
 // View results by exam
 router.get(
-  '/exam/:examId',
+  "/exam/:examId",
   auth,
-  roleCheck('teacher', 'admin'),
+  roleCheck("teacher", "admin"),
   asyncHandler(getResultsByExam)
 );
 
-module.exports = router;
-
+export default router;

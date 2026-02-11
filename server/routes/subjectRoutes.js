@@ -1,24 +1,24 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-const {
+import {
   createSubject,
   getSubjects,
   getSubjectById,
   updateSubject,
   deleteSubject,
-} = require('../controllers/subjectController');
-const { auth, roleCheck } = require('../middleware/authMiddleware');
-const asyncHandler = require('../utils/asyncHandler');
+} from "../controllers/subjectController.js";
+
+import { auth, roleCheck } from "../middleware/authMiddleware.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 // Admin manages subjects
-router.use(auth, roleCheck('admin'));
+router.use(auth, roleCheck("admin"));
 
-router.post('/', asyncHandler(createSubject));
-router.get('/', asyncHandler(getSubjects));
-router.get('/:id', asyncHandler(getSubjectById));
-router.put('/:id', asyncHandler(updateSubject));
-router.delete('/:id', asyncHandler(deleteSubject));
+router.post("/", asyncHandler(createSubject));
+router.get("/", asyncHandler(getSubjects));
+router.get("/:id", asyncHandler(getSubjectById));
+router.put("/:id", asyncHandler(updateSubject));
+router.delete("/:id", asyncHandler(deleteSubject));
 
-module.exports = router;
-
+export default router;

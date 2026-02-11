@@ -1,11 +1,14 @@
-const Message = require('../models/Message');
-const User = require('../models/User');
+import Message from "../models/Message.js";
+import User from "../models/User.js";
 
 // Teacher or parent send message
-const sendMessage = async (req, res) => {
+export const sendMessage = async (req, res) => {
   const { toUserId, relatedStudentId, content } = req.body;
+
   const toUser = await User.findById(toUserId);
-  if (!toUser) return res.status(404).json({ message: 'Recipient not found' });
+  if (!toUser) {
+    return res.status(404).json({ message: "Recipient not found" });
+  }
 
   const message = await Message.create({
     from: req.user._id,
@@ -17,9 +20,10 @@ const sendMessage = async (req, res) => {
   res.status(201).json(message);
 };
 
-// Get conversation between logged in user and another user
-const getConversation = async (req, res) => {
+// Get conversation between logged-in user and another user
+export const getConversation = async (req, res) => {
   const { otherUserId } = req.params;
+
   const messages = await Message.find({
     $or: [
       { from: req.user._id, to: otherUserId },
@@ -27,22 +31,16 @@ const getConversation = async (req, res) => {
     ],
   })
     .sort({ createdAt: 1 })
-    .populate('from to', 'name role');
+    .populate("from to", "name role");
 
   res.json(messages);
 };
 
-// Get inbox for logged in user
-const getInbox = async (req, res) => {
+// Get inbox for logged-in user
+export const getInbox = async (req, res) => {
   const messages = await Message.find({ to: req.user._id })
     .sort({ createdAt: -1 })
-    .populate('from', 'name role');
+    .populate("from", "name role");
+
   res.json(messages);
 };
-
-module.exports = {
-  sendMessage,
-  getConversation,
-  getInbox,
-};
-

@@ -1,15 +1,20 @@
-const Attendance = require('../models/Attendance');
-const Student = require('../models/Student');
-const Class = require('../models/Class');
+import Attendance from "../models/Attendance.js";
+import Student from "../models/Student.js";
+import Class from "../models/Class.js";
 
 // Teacher: mark attendance for a student
-const markAttendance = async (req, res) => {
+export const markAttendance = async (req, res) => {
   const { studentId, classId, date, status, remarks } = req.body;
+
   const student = await Student.findById(studentId);
-  if (!student) return res.status(404).json({ message: 'Student not found' });
+  if (!student) {
+    return res.status(404).json({ message: "Student not found" });
+  }
 
   const cls = await Class.findById(classId || student.class);
-  if (!cls) return res.status(404).json({ message: 'Class not found' });
+  if (!cls) {
+    return res.status(404).json({ message: "Class not found" });
+  }
 
   const recordDate = date ? new Date(date) : new Date();
 
@@ -19,8 +24,8 @@ const markAttendance = async (req, res) => {
       student: studentId,
       class: cls._id,
       date: recordDate,
-      status: status || 'present',
-      markedBy: req.user.teacher || null,
+      status: status || "present",
+      markedBy: req.user?.teacher || null,
       remarks,
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -30,10 +35,12 @@ const markAttendance = async (req, res) => {
 };
 
 // Get attendance for a student
-const getStudentAttendance = async (req, res) => {
+export const getStudentAttendance = async (req, res) => {
   const { studentId } = req.params;
   const { from, to } = req.query;
+
   const query = { student: studentId };
+
   if (from || to) {
     query.date = {};
     if (from) query.date.$gte = new Date(from);
@@ -45,13 +52,15 @@ const getStudentAttendance = async (req, res) => {
 };
 
 // Attendance summary for a class/day
-const getAttendanceSummary = async (req, res) => {
+export const getAttendanceSummary = async (req, res) => {
   const { classId } = req.params;
   const { date } = req.query;
 
   const targetDate = date ? new Date(date) : new Date();
+
   const dayStart = new Date(targetDate);
   dayStart.setHours(0, 0, 0, 0);
+
   const dayEnd = new Date(dayStart);
   dayEnd.setHours(23, 59, 59, 999);
 
@@ -68,12 +77,9 @@ const getAttendanceSummary = async (req, res) => {
     { present: 0, absent: 0, late: 0, excused: 0 }
   );
 
-  res.json({ date: dayStart, summary, count: records.length });
+  res.json({
+    date: dayStart,
+    summary,
+    count: records.length,
+  });
 };
-
-module.exports = {
-  markAttendance,
-  getStudentAttendance,
-  getAttendanceSummary,
-};
-

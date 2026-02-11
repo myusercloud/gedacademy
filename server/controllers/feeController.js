@@ -1,25 +1,28 @@
-const Fee = require('../models/Fee');
-const Student = require('../models/Student');
-const { initiateStkPush } = require('../utils/mpesa');
+import Fee from "../models/Fee.js";
+import Student from "../models/Student.js";
+import { initiateStkPush } from "../utils/mpesa.js";
 
-const createFeeRecord = async (req, res) => {
+export const createFeeRecord = async (req, res) => {
   const fee = await Fee.create(req.body);
   res.status(201).json(fee);
 };
 
-const getFeesByStudent = async (req, res) => {
+export const getFeesByStudent = async (req, res) => {
   const { studentId } = req.params;
   const fees = await Fee.find({ student: studentId }).sort({ year: -1, term: 1 });
   res.json(fees);
 };
 
-const initiateMpesaPayment = async (req, res, next) => {
+export const initiateMpesaPayment = async (req, res, next) => {
   try {
     const { feeId, phoneNumber } = req.body;
-    const fee = await Fee.findById(feeId).populate('student');
-    if (!fee) return res.status(404).json({ message: 'Fee record not found' });
 
-    const student = await Student.findById(fee.student._id).populate('user');
+    const fee = await Fee.findById(feeId).populate("student");
+    if (!fee) {
+      return res.status(404).json({ message: "Fee record not found" });
+    }
+
+    const student = await Student.findById(fee.student._id).populate("user");
 
     const mpesaRes = await initiateStkPush({
       amount: fee.amount - fee.amountPaid,
@@ -28,7 +31,9 @@ const initiateMpesaPayment = async (req, res, next) => {
       description: `Fees for ${student.user.name}`,
     });
 
-    fee.mpesaCheckoutRequestId = mpesaRes.CheckoutRequestID || mpesaRes.CheckoutRequestId;
+    fee.mpesaCheckoutRequestId =
+      mpesaRes.CheckoutRequestID || mpesaRes.CheckoutRequestId;
+
     await fee.save();
 
     res.json({ fee, mpesa: mpesaRes });
@@ -37,41 +42,42 @@ const initiateMpesaPayment = async (req, res, next) => {
   }
 };
 
-// Simple callback stub – in real app configure as MPesa callback URL
-const mpesaCallback = async (req, res) => {
+export const mpesaCallback = async (req, res) => {
   const body = req.body;
+
   try {
     const callback = body.Body?.stkCallback;
-    if (!callback) return res.json({ message: 'No callback data' });
+    if (!callback) {
+      return res.json({ message: "No callback data" });
+    }
 
     const checkoutId = callback.CheckoutRequestID;
     const resultCode = callback.ResultCode;
 
+    // Payment successful
     if (resultCode === 0) {
       const metadata = callback.CallbackMetadata?.Item || [];
-      const amountItem = metadata.find((i) => i.Name === 'Amount');
-      const receiptItem = metadata.find((i) => i.Name === 'MpesaReceiptNumber');
 
-      const fee = await Fee.findOne({ mpesaCheckoutRequestId: checkoutId });
+      const amountItem = metadata.find((i) => i.Name === "Amount");
+      const receiptItem = metadata.find((i) => i.Name === "MpesaReceiptNumber");
+
+      const fee = await Fee.findOne({
+        mpesaCheckoutRequestId: checkoutId,
+      });
+
       if (fee) {
         fee.amountPaid += amountItem?.Value || 0;
-        fee.status = fee.amountPaid >= fee.amount ? 'paid' : 'partial';
-        fee.mpesaReceiptNumber = receiptItem?.Value || fee.mpesaReceiptNumber;
+        fee.status = fee.amountPaid >= fee.amount ? "paid" : "partial";
+        fee.mpesaReceiptNumber =
+          receiptItem?.Value || fee.mpesaReceiptNumber;
         fee.paidAt = new Date();
+
         await fee.save();
       }
     }
 
-    res.json({ message: 'Callback processed' });
+    res.json({ message: "Callback processed" });
   } catch (err) {
-    res.status(500).json({ message: 'Error processing callback' });
+    res.status(500).json({ message: "Error processing callback" });
   }
 };
-
-module.exports = {
-  createFeeRecord,
-  getFeesByStudent,
-  initiateMpesaPayment,
-  mpesaCallback,
-};
-

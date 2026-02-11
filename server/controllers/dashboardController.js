@@ -1,13 +1,13 @@
-const Student = require('../models/Student');
-const Teacher = require('../models/Teacher');
-const Class = require('../models/Class');
-const Attendance = require('../models/Attendance');
-const Fee = require('../models/Fee');
-const Result = require('../models/Result');
-const Exam = require('../models/Exam');
-const Settings = require('../models/Settings');
+import Student from "../models/Student.js";
+import Teacher from "../models/Teacher.js";
+import Class from "../models/Class.js";
+import Attendance from "../models/Attendance.js";
+import Fee from "../models/Fee.js";
+import Result from "../models/Result.js";
+import Exam from "../models/Exam.js";
+import Settings from "../models/Settings.js";
 
-const getOverview = async (req, res) => {
+export const getOverview = async (req, res) => {
   const [totalStudents, totalTeachers, totalClasses] = await Promise.all([
     Student.countDocuments(),
     Teacher.countDocuments(),
@@ -17,6 +17,7 @@ const getOverview = async (req, res) => {
   const today = new Date();
   const startOfDay = new Date(today);
   startOfDay.setHours(0, 0, 0, 0);
+
   const endOfDay = new Date(startOfDay);
   endOfDay.setHours(23, 59, 59, 999);
 
@@ -29,29 +30,33 @@ const getOverview = async (req, res) => {
   const year = currentSettings?.currentYear;
 
   let feesAggregate = { collected: 0 };
+
   if (term && year) {
     const fees = await Fee.aggregate([
       { $match: { term, year } },
       {
         $group: {
           _id: null,
-          collected: { $sum: '$amountPaid' },
+          collected: { $sum: "$amountPaid" },
         },
       },
     ]);
+
     feesAggregate = fees[0] || { collected: 0 };
   }
 
-  // Top performers (simple: average >= 80 for latest exam)
+  // Top performers (avg >= 80 for latest exam)
   const latestExam = await Exam.findOne().sort({ year: -1, createdAt: -1 });
+
   let topPerformers = [];
+
   if (latestExam) {
     const results = await Result.aggregate([
       { $match: { exam: latestExam._id } },
       {
         $group: {
-          _id: '$student',
-          avgMarks: { $avg: '$marks' },
+          _id: "$student",
+          avgMarks: { $avg: "$marks" },
         },
       },
       { $sort: { avgMarks: -1 } },
@@ -59,17 +64,18 @@ const getOverview = async (req, res) => {
     ]);
 
     topPerformers = await Student.populate(results, {
-      path: '_id',
-      select: 'admissionNumber',
-      populate: { path: 'user', select: 'name' },
+      path: "_id",
+      select: "admissionNumber",
+      populate: { path: "user", select: "name" },
     });
   }
 
-  // Upcoming events from CMS
+  // Upcoming events (from CMS settings)
   const now = new Date();
+
   const upcomingEvents =
     currentSettings?.cms?.newsAndEvents?.filter(
-      (e) => e.type === 'event' && new Date(e.date) >= now
+      (e) => e.type === "event" && new Date(e.date) >= now
     ) || [];
 
   res.json({
@@ -82,8 +88,3 @@ const getOverview = async (req, res) => {
     upcomingEvents,
   });
 };
-
-module.exports = {
-  getOverview,
-};
-

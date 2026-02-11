@@ -1,30 +1,37 @@
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const Parent = require('../models/Parent');
-const Student = require('../models/Student');
-const { parentSchema } = require('../utils/validators');
+import bcrypt from "bcryptjs";
+import User from "../models/User.js";
+import Parent from "../models/Parent.js";
+import Student from "../models/Student.js";
+import { parentSchema } from "../utils/validators.js";
 
 const SALT_ROUNDS = 10;
 
-const createParent = async (req, res) => {
+export const createParent = async (req, res) => {
   const { error, value } = parentSchema.validate(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
+  if (error)
+    return res.status(400).json({ message: error.details[0].message });
 
   const { userId, name, email, children, occupation, address, phone } = value;
 
   let user = null;
+
   if (userId) {
     user = await User.findById(userId);
   } else {
     const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: 'User with email already exists' });
+    if (existing)
+      return res
+        .status(400)
+        .json({ message: "User with email already exists" });
+
     const tempPassword = phone || email;
     const hashed = await bcrypt.hash(tempPassword, SALT_ROUNDS);
+
     user = await User.create({
       name,
       email,
       password: hashed,
-      role: 'parent',
+      role: "parent",
     });
   }
 
@@ -49,24 +56,32 @@ const createParent = async (req, res) => {
   res.status(201).json(parent);
 };
 
-const getParents = async (req, res) => {
+export const getParents = async (req, res) => {
   const parents = await Parent.find()
-    .populate('user', 'name email')
-    .populate('children', 'admissionNumber');
+    .populate("user", "name email")
+    .populate("children", "admissionNumber");
+
   res.json(parents);
 };
 
-const getParentById = async (req, res) => {
+export const getParentById = async (req, res) => {
   const parent = await Parent.findById(req.params.id)
-    .populate('user', 'name email')
-    .populate('children', 'admissionNumber');
-  if (!parent) return res.status(404).json({ message: 'Parent not found' });
+    .populate("user", "name email")
+    .populate("children", "admissionNumber");
+
+  if (!parent) {
+    return res.status(404).json({ message: "Parent not found" });
+  }
+
   res.json(parent);
 };
 
-const updateParent = async (req, res) => {
-  const parent = await Parent.findById(req.params.id).populate('user');
-  if (!parent) return res.status(404).json({ message: 'Parent not found' });
+export const updateParent = async (req, res) => {
+  const parent = await Parent.findById(req.params.id).populate("user");
+
+  if (!parent) {
+    return res.status(404).json({ message: "Parent not found" });
+  }
 
   const { name, email, children, occupation, address, phone } = req.body;
 
@@ -83,25 +98,20 @@ const updateParent = async (req, res) => {
   res.json(parent);
 };
 
-const deleteParent = async (req, res) => {
+export const deleteParent = async (req, res) => {
   const parent = await Parent.findById(req.params.id);
-  if (!parent) return res.status(404).json({ message: 'Parent not found' });
+
+  if (!parent) {
+    return res.status(404).json({ message: "Parent not found" });
+  }
 
   const userId = parent.user;
 
   await parent.deleteOne();
+
   if (userId) {
     await User.findByIdAndDelete(userId);
   }
 
-  res.json({ message: 'Parent deleted' });
+  res.json({ message: "Parent deleted" });
 };
-
-module.exports = {
-  createParent,
-  getParents,
-  getParentById,
-  updateParent,
-  deleteParent,
-};
-
